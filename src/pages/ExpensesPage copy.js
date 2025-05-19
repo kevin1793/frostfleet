@@ -53,7 +53,6 @@ const ExpensesPage = () => {
   const [newExpense, setNewExpense] = useState({
     title: '',
     amount: '',
-    category:'',
     date: new Date().toISOString().split('T')[0], // Default to today
   });
   const [editingExpense, setEditingExpense] = useState(null); // For editing
@@ -179,7 +178,6 @@ const ExpensesPage = () => {
     try {
       await addDoc(expensesRef, {
         title: newExpense.title,
-        category: newExpense.category,
         amount: parseFloat(newExpense.amount),
         date: new Date(newExpense.date).toISOString(),
         createdAt: serverTimestamp(),
@@ -232,7 +230,22 @@ const ExpensesPage = () => {
         <Typography>No expenses found</Typography>
       ) : (
         <StyledList>
-          <ExpenseList expenses = {expenses} handleOpenModal={handleOpenModal} handleDeleteExpense = {handleDeleteExpense}></ExpenseList>
+          {expenses.map((expense) => (
+            <ListItem key={expense.id} divider>
+              <ListItemText
+                primary={expense.title || 'Untitled Expense'}
+                secondary={`$${expense.amount} - ${new Date(expense.date).toLocaleDateString()}`}
+              />
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton onClick={() => handleOpenModal(expense)}>
+                  <EditIcon />
+                </IconButton>
+                <IconButton onClick={() => handleDeleteExpense(expense)}>
+                  <DeleteIcon color="error" />
+                </IconButton>
+              </Box>
+            </ListItem>
+          ))}
         </StyledList>
       )}
   
@@ -258,17 +271,6 @@ const ExpensesPage = () => {
             fullWidth
             variant="outlined"
             value={newExpense.title}
-            onChange={handleInputChange}
-          />
-          <TextField
-            autoFocus
-            margin="dense"
-            name="category"
-            label="Category"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={newExpense.category}
             onChange={handleInputChange}
           />
           <TextField
